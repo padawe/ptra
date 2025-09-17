@@ -1,0 +1,19 @@
+# Ignore old versions/backups
+old_versions/
+*.bak
+*.old
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Node/npm (if you ever add tools later)
+node_modules/
+npm-debug.log
+yarn-error.log
