@@ -1,235 +1,277 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Practice Tracker (Firebase Seed)</title>
+  <title>Practice Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-color: #f2f2f2;
-      --text-color: #1a1a1a;
-      --card-color: #fafafa;
-      --button-bg: #d6d6d6;
-      --button-text: #1a1a1a;
-      --add-button-bg: #3399ff;
-    }
-
-    body.dark {
-      --bg-color: #1c1c1c;
-      --text-color: #e6e6e6;
-      --card-color: #2a2a2a;
-      --button-bg: #333333;
-      --button-text: #e6e6e6;
-      --add-button-bg: #3399ff;
-    }
-
     body {
-      margin: 20px;
       font-family: 'Roboto', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color 0.3s, color 0.3s;
+      margin:0;
+      padding:0;
+      background:#ddd; /* main background */
+      color:#111;
+      transition: background 0.3s, color 0.3s;
+      display:flex;
+      justify-content:center;
+    }
+    body.dark {
+      background:#111;
+      color:#f5f5f5;
     }
 
-    #date {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 0.9rem;
+    #app-container {
+      width:100%;
+      max-width:450px;
+      min-height:100vh;  /* full viewport height */
+      padding:20px;
+      background:#eee; /* secondary background */
+      border-radius:8px;
+      box-sizing:border-box;
+      transition: background 0.3s;
+    }
+    body.dark #app-container {
+      background:#222; /* dark mode secondary background */
     }
 
-    h1 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      text-transform: uppercase;
-      margin-bottom: 20px;
+    /* --- Top date row --- */
+    #top-row {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-bottom:16px;
+      gap:8px;
     }
 
+    #date-picker {
+      font-size:16px;
+      padding:4px 8px;
+      border:2px solid transparent;
+      border-radius:4px;
+      outline:none;
+      cursor:pointer;
+      transition:border-color 0.3s, color 0.3s;
+      background:inherit;
+      color:inherit;
+    }
+
+    /* Highlight current date in blue */
+    #date-picker.current {
+      border-color:#007bff; 
+      color:#007bff;
+    }
+    body.dark #date-picker.current {
+      border-color:#66b2ff;
+      color:#66b2ff;
+    }
+
+    /* Buttons */
     button {
-      background-color: var(--button-bg);
-      color: var(--button-text);
-      border: none;
-      padding: 5px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      cursor: pointer;
-      font-weight: bold;
-      margin-left: 5px;
+      border:none;
+      outline:none;
+      border-radius:4px;
+      width:32px;
+      height:32px;
+      font-weight:bold;
+      text-transform:uppercase;
+      cursor:pointer;
+      background:#e0e0e0;
+      transition: background 0.3s, color 0.3s;
     }
+    body.dark button { background:#444; color:#f5f5f5; }
+    #add-btn { width:48px; height:48px; font-size:24px; background:#007bff; color:white; }
 
-    ul {
-      list-style: none;
-      padding: 0;
+    /* Heading row */
+    #heading-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
     }
+    h1 { margin:0; text-transform:uppercase; font-size:20px; }
 
+    /* List & cards */
+    ul { list-style:none; padding:0; margin:0; }
     li {
-      background-color: var(--card-color);
-      border-radius: 8px;
-      padding: 8px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background:#f9f9f9;
+      margin:8px 0;
+      padding:8px;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      cursor:pointer;
+      transition: background 0.3s;
+      width:100%;
     }
+    body.dark li { background:#333; }
 
-    .li-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .li-left button {
-      margin-left: 5px;
-    }
+    li input[type="checkbox"] { margin-right:12px; }
+    .edit-btn { margin-left:10px; background:#f0f0f0; color:#333; }
+    body.dark .edit-btn { background:#555; color:#ddd; }
+    .delete-btn { margin-left:auto; background:#f0f0f0; color:#333; }
+    body.dark .delete-btn { background:#555; color:#ddd; }
 
     #add-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: var(--add-button-bg);
-      color: white;
-      border-radius: 4px;
-      width: 40px;
-      height: 40px;
-      font-size: 1.2rem;
-      font-weight: bold;
+      position:fixed;
+      bottom:20px;
+      right:calc(50% - 225px + 20px);
     }
   </style>
 </head>
 <body>
-  <div id="date">September 17, 2025</div>
-  <h1>
-    Practices
-    <button id="mode-toggle">M</button>
-  </h1>
-  <ul id="list"></ul>
-  <button id="add-btn">+</button>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <div id="app-container">
+
+    <div id="top-row">
+      <button id="prev-day">&lt;</button>
+      <input type="date" id="date-picker">
+      <button id="next-day">&gt;</button>
+    </div>
+
+    <div id="heading-row">
+      <h1>PRACTICES</h1>
+      <button id="mode-btn">M</button>
+    </div>
+
+    <ul id="list"></ul>
+    <button id="add-btn">+</button>
+
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    // --- Firebase configuration ---
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "your-project.firebaseapp.com",
-      databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-      projectId: "your-project",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyDIdTwkFuX6YicW5SuXAC8EDuxdDFlRDFc",
+      authDomain: "practicetracker-4c679.firebaseapp.com",
+      databaseURL: "https://practicetracker-4c679-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "practicetracker-4c679",
+      storageBucket: "practicetracker-4c679.firebasestorage.app",
+      messagingSenderId: "919695284161",
+      appId: "1:919695284161:web:a5dad6756da4745c3b8140"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const userPath = 'users/defaultUser/practices'; // single user for now
 
-    // --- Default practices ---
+    let currentDate = new Date().toISOString().split("T")[0];
+    const datePicker = document.getElementById("date-picker");
+    const listEl = document.getElementById("list");
+    const bodyEl = document.body;
+    datePicker.value = currentDate;
+
     const defaultPractices = [
-      { id: 1, name: "Meditate", completed: false },
-      { id: 2, name: "Run", completed: false },
-      { id: 3, name: "Cook", completed: false },
-      { id: 4, name: "Journal", completed: false },
-      { id: 5, name: "Learn", completed: false }
+      { id:1, name:"Meditate", completed:false },
+      { id:2, name:"Run", completed:false },
+      { id:3, name:"Cook", completed:false },
+      { id:4, name:"Journal", completed:false },
+      { id:5, name:"Learn", completed:false }
     ];
 
-    let practices = [];
-
-    // --- Render function ---
-    function render() {
-      const list = document.getElementById("list");
-      list.innerHTML = "";
-
-      practices.forEach((p, index) => {
-        const li = document.createElement("li");
-
-        const leftDiv = document.createElement("div");
-        leftDiv.className = "li-left";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = p.completed;
-        checkbox.onchange = () => {
-          practices[index].completed = checkbox.checked;
-          save();
-        };
-
-        const nameSpan = document.createElement("span");
-        nameSpan.textContent = " " + p.name;
-
-        // Edit button
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "E";
-        editBtn.onclick = () => {
-          const newName = prompt("Rename practice:", p.name);
-          if (newName && newName.trim() !== "") {
-            practices[index].name = newName.trim();
-            save();
-            render();
-          }
-        };
-
-        leftDiv.appendChild(checkbox);
-        leftDiv.appendChild(nameSpan);
-        leftDiv.appendChild(editBtn);
-
-        // Delete button
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "D";
-        deleteBtn.onclick = () => {
-          if (confirm(`Delete "${p.name}"?`)) {
-            practices.splice(index, 1);
-            save();
-            render();
-          }
-        };
-
-        li.appendChild(leftDiv);
-        li.appendChild(deleteBtn);
-        list.appendChild(li);
-      });
-    }
-
-    // --- Save to Firebase ---
-    function save() {
-      const dataToSave = {};
-      practices.forEach(p => dataToSave[p.id] = p);
-      db.ref(userPath).set(dataToSave);
-    }
-
-    // --- Load from Firebase ---
-    function load() {
-      db.ref(userPath).once('value').then(snapshot => {
-        const saved = snapshot.val() || {};
-        practices = Object.values(saved);
-
-        // Merge defaults
-        defaultPractices.forEach(def => {
-          if (!practices.find(p => p.id === def.id)) {
-            practices.push(def);
-          }
-        });
-        render();
-      });
-    }
-
-    // --- Light/Dark mode toggle ---
-    document.getElementById("mode-toggle").onclick = () => {
-      document.body.classList.toggle("dark");
-    };
-
-    // --- Add new practice ---
-    document.getElementById("add-btn").onclick = () => {
-      const name = prompt("Enter new practice name:");
-      if (name && name.trim() !== "") {
-        const newId = practices.length > 0 ? Math.max(...practices.map(p => p.id)) + 1 : 1;
-        practices.push({ id: newId, name: name.trim(), completed: false });
-        save();
-        render();
+    function highlightCurrentDate() {
+      const today = new Date().toISOString().split("T")[0];
+      if(datePicker.value === today){
+        datePicker.classList.add("current");
+      } else {
+        datePicker.classList.remove("current");
       }
+    }
+
+    function loadPractices() {
+      db.ref('users/padawe/'+currentDate).once('value', snapshot=>{
+        let data = snapshot.val();
+        if(!data){
+          data=defaultPractices;
+          savePractices(data);
+        }
+        render(data);
+        highlightCurrentDate();
+      });
+    }
+
+    function savePractices(practices){
+      db.ref('users/padawe/'+currentDate).set(practices);
+    }
+
+    function render(practices){
+      listEl.innerHTML="";
+      practices.forEach((p,index)=>{
+        let li=document.createElement("li");
+
+        let checkbox=document.createElement("input");
+        checkbox.type="checkbox";
+        checkbox.checked=p.completed;
+        checkbox.onchange=e=>{
+          e.stopPropagation();
+          practices[index].completed=checkbox.checked;
+          savePractices(practices);
+        };
+        li.appendChild(checkbox);
+        li.appendChild(document.createTextNode(" "+p.name));
+
+        let editBtn=document.createElement("button");
+        editBtn.textContent="E";
+        editBtn.className="edit-btn";
+        editBtn.onclick=e=>{
+          e.stopPropagation();
+          const newName=prompt("Edit practice name:",p.name);
+          if(newName){
+            practices[index].name=newName;
+            savePractices(practices);
+            render(practices);
+          }
+        };
+        li.appendChild(editBtn);
+
+        let deleteBtn=document.createElement("button");
+        deleteBtn.textContent="D";
+        deleteBtn.className="delete-btn";
+        deleteBtn.onclick=e=>{
+          e.stopPropagation();
+          practices.splice(index,1);
+          savePractices(practices);
+          render(practices);
+        };
+        li.appendChild(deleteBtn);
+
+        li.onclick=()=>{
+          checkbox.checked=!checkbox.checked;
+          practices[index].completed=checkbox.checked;
+          savePractices(practices);
+        };
+
+        listEl.appendChild(li);
+      });
+    }
+
+    document.getElementById("prev-day").onclick=()=>{
+      currentDate=new Date(new Date(currentDate).getTime()-86400000).toISOString().split("T")[0];
+      datePicker.value=currentDate;
+      loadPractices();
+    };
+    document.getElementById("next-day").onclick=()=>{
+      currentDate=new Date(new Date(currentDate).getTime()+86400000).toISOString().split("T")[0];
+      datePicker.value=currentDate;
+      loadPractices();
+    };
+    datePicker.onchange=()=>{
+      currentDate=datePicker.value;
+      loadPractices();
+    };
+    document.getElementById("mode-btn").onclick=()=>{bodyEl.classList.toggle("dark");};
+    document.getElementById("add-btn").onclick=()=>{
+      const name=prompt("Enter new practice name:");
+      if(!name) return;
+      db.ref('users/padawe/'+currentDate).once('value',snapshot=>{
+        let practices=snapshot.val()||[];
+        const newId=practices.length?Math.max(...practices.map(p=>p.id))+1:1;
+        practices.push({id:newId,name,completed:false});
+        savePractices(practices);
+        render(practices);
+      });
     };
 
-    load();
+    loadPractices();
   </script>
 </body>
 </html>
